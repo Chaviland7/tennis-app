@@ -5,8 +5,19 @@ import { useState } from "react";
 
 import { env } from "../env.mjs";
 
+interface YoutubeApiResponseData {
+  id: {
+    videoId: string;
+  };
+}
+interface YoutubeApiResponse {
+  data: {
+    items: YoutubeApiResponseData[];
+  };
+}
+
 const Home: NextPage = () => {
-  const [videoId, setVideoId] = useState(null);
+  const [videoId, setVideoId] = useState<string | null>(null);
   const keywords: string[] = ["highlights", "federer", "nadal", "djokovic"];
 
   if (!videoId) {
@@ -25,31 +36,33 @@ const Home: NextPage = () => {
           },
         }
       )
-      .then((response) => {
+      .then((response: YoutubeApiResponse) => {
         const resultNumToUse = Math.floor(Math.random() * 50);
-        setVideoId(response.data.items[resultNumToUse].id.videoId);
-      });
+        setVideoId(
+          (response.data.items[resultNumToUse] as YoutubeApiResponseData).id
+            .videoId
+        );
+      })
+      .catch((e) => console.log(e));
   }
 
-  return (
-    videoId && (
-      <>
-        <Head>
-          <title>Luke.Tennis</title>
-          <meta name="description" content="Random Tennis Videos" />
-          <link rel="icon" href="/favicon.ico" />
-        </Head>
-        <main>
-          <iframe
-            className="h-screen w-screen"
-            src={`https://www.youtube.com/embed/${videoId}`}
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-            allowFullScreen
-          ></iframe>
-        </main>
-      </>
-    )
-  );
+  return videoId ? (
+    <>
+      <Head>
+        <title>Luke.Tennis</title>
+        <meta name="description" content="Random Tennis Videos" />
+        <link rel="icon" href="/favicon.ico" />
+      </Head>
+      <main>
+        <iframe
+          className="h-screen w-screen"
+          src={`https://www.youtube.com/embed/${videoId}`}
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+          allowFullScreen
+        ></iframe>
+      </main>
+    </>
+  ) : null;
 };
 
 export default Home;
