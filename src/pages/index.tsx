@@ -25,7 +25,7 @@ const Home: NextPage = () => {
 
     axios
       .get(
-        `https://www.googleapis.com/youtube/v3/search?key=${env.YOUTUBE_API_KEY}`,
+        `https://www.googleapis.com/youtube/v3/search?key=${env.NEXT_PUBLIC_YOUTUBE_API_KEY}`,
         {
           params: {
             videoEmbeddable: true,
