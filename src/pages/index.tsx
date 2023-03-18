@@ -16,6 +16,21 @@ interface YoutubeApiResponse {
   };
 }
 
+interface specificError {
+  reason: string;
+}
+
+interface generalError {
+  response: {
+    data: {
+      error: {
+        code: number;
+        errors: specificError[];
+      };
+    };
+  };
+}
+
 const Home: NextPage = () => {
   const [videoId, setVideoId] = useState<string | null>(null);
   const keywords: string[] = ["highlights", "federer", "nadal", "djokovic"];
@@ -43,26 +58,44 @@ const Home: NextPage = () => {
             .videoId
         );
       })
-      .catch((e) => console.log(e));
+      .catch((e: generalError) => {
+        console.log(e);
+        if (
+          e.response.data?.error?.code === 403 &&
+          e.response.data.error.errors.some((e) => e.reason === "quotaExceeded")
+        ) {
+          alert(
+            "The YouTube API cut ya off for today. Maybe time to go outside..."
+          );
+        }
+      });
   }
 
-  return videoId ? (
+  return (
     <>
       <Head>
         <title>Luke.Tennis</title>
         <meta name="description" content="Random Tennis Videos" />
-        <link rel="icon" href="/favicon.ico" />
+        <link rel="icon" href="/favicon.png" />
       </Head>
       <main>
-        <iframe
-          className="h-screen w-screen"
-          src={`https://www.youtube.com/embed/${videoId}`}
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-          allowFullScreen
-        ></iframe>
+        {videoId ? (
+          <iframe
+            className="h-screen w-screen"
+            src={`https://www.youtube.com/embed/${videoId}`}
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            allowFullScreen
+          ></iframe>
+        ) : (
+          <img
+            className="my-0 mx-auto h-screen"
+            src="/loading.gif"
+            alt="loading"
+          />
+        )}
       </main>
     </>
-  ) : null;
+  );
 };
 
 export default Home;
